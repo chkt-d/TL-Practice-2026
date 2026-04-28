@@ -4,10 +4,10 @@
     {
         Order order = new Order();
 
-        order.ProductName = ReadNonEmptyString( "Введите название товара:" );
+        order.ProductName = ReadString( "Введите название товара:" );
         order.Count = ReadPositiveInt( "Введите количество товара:" );
-        order.UserName = ReadNonEmptyString( "Введите ваше имя:" );
-        order.Address = ReadNonEmptyString( "Введите адрес доставки:" );
+        order.UserName = ReadString( "Введите ваше имя:" );
+        order.Address = ReadString( "Введите адрес доставки:" );
 
         bool isConfirmed = AskForConfirmation( order );
 
@@ -21,12 +21,12 @@
         }
     }
 
-    private static string ReadNonEmptyString( string message )
+    private static string ReadString( string message )
     {
         while ( true )
         {
             Console.Write( $"{message} " );
-            string? input = Console.ReadLine();
+            string input = Console.ReadLine();
 
             if ( !string.IsNullOrWhiteSpace( input ) )
             {
@@ -42,7 +42,7 @@
         while ( true )
         {
             Console.Write( $"{message} " );
-            string? input = Console.ReadLine();
+            string input = Console.ReadLine();
 
             if ( int.TryParse( input, out int value ) && value > 0 )
             {
@@ -57,9 +57,9 @@
     {
         while ( true )
         {
-            Console.WriteLine($"Здравствуйте, {order.UserName}, вы заказали {order.Count} {order.ProductName} на адрес {order.Address}, все верно? [Y/n]" );
+            Console.WriteLine( $"Здравствуйте, {order.UserName}, вы заказали {order.Count} {order.ProductName} на адрес {order.Address}, все верно? [Y/n]" );
 
-            string? answer = Console.ReadLine();
+            string answer = Console.ReadLine();
 
             if ( string.IsNullOrWhiteSpace( answer ) )
             {
