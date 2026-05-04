@@ -1,0 +1,187 @@
+﻿double balance = 0;
+bool isGameFinished = false;
+
+PrintHeader();
+Console.WriteLine( "Press Enter to start!" );
+Console.ReadLine();
+
+while ( !isGameFinished )
+{
+    PrintMenu();
+
+    string option = Console.ReadLine();
+    Console.WriteLine();
+    OptionHandleResult result = HandleOptions( option );
+    if ( result != OptionHandleResult.Success )
+    {
+        PrintError( result );
+    }
+}
+
+void PrintError( OptionHandleResult result )
+{
+    switch ( result )
+    {
+        case OptionHandleResult.InvalidOption:
+            Console.WriteLine( "Invalid option." );
+            break;
+
+        case OptionHandleResult.InvalidDepositValue:
+            Console.WriteLine( "Invalid deposit value." );
+            break;
+
+        case OptionHandleResult.InvalidBetValue:
+            Console.WriteLine( "Invalid bet value." );
+            break;
+    }
+
+    Console.WriteLine();
+}
+
+void PrintHeader()
+{
+    string header = """
+ ####    ####    ####  # #   #  #### 
+#    #  #    #  #      # ##  # #    #
+#       #    #   ####  # # # # #    #
+#       ######      #  # #  ## #    #
+#    #  #    #  #   #  # #   # #    #
+ ####   #    #   ###   # #   #  #### 
+""";
+
+    Console.WriteLine( header );
+    Console.WriteLine();
+    Console.WriteLine( "Rules:" );
+    Console.WriteLine( "1. Enter your bet." );
+    Console.WriteLine( "2. A random number from 1 to 20 is generated." );
+    Console.WriteLine( "3. Winning numbers are 18, 19, and 20." );
+    Console.WriteLine( "4. On loss, your bet is taken." );
+    Console.WriteLine( "5. On win, the prize is calculated based on the random number." );
+}
+
+void PrintMenu()
+{
+    List<string> menuOptions = [
+        "1. Deposit",
+        "2. Show balance",
+        "3. Gamble!",
+        "4. Exit"];
+
+    foreach ( string menuOption in menuOptions )
+    {
+        Console.WriteLine( menuOption );
+    }
+
+    Console.Write( "What do you want to do? " );
+}
+
+OptionHandleResult HandleOptions( string option )
+{
+    switch ( option )
+    {
+        case "1":
+            return MakeDeposit();
+
+        case "2":
+            return ShowBalance();
+
+        case "3":
+            return Gamble();
+
+        case "4":
+            return Exit();
+
+        default:
+            return OptionHandleResult.InvalidOption;
+    }
+}
+
+OptionHandleResult MakeDeposit()
+{
+    Console.Write( "Enter your deposit: " );
+    string depositStr = Console.ReadLine();
+    Console.WriteLine();
+
+    if ( !double.TryParse( depositStr, out double deposit )
+        || deposit <= 0
+        || double.IsInfinity( deposit )
+        || double.IsNaN( deposit )
+        || double.MaxValue - deposit < balance )
+    {
+        return OptionHandleResult.InvalidDepositValue;
+    }
+
+    balance += deposit;
+
+    return OptionHandleResult.Success;
+}
+
+OptionHandleResult ShowBalance()
+{
+    Console.WriteLine( $"Current balance: {balance}" );
+    Console.WriteLine();
+    return OptionHandleResult.Success;
+}
+
+OptionHandleResult Gamble()
+{
+    Console.Write( "Enter your bet: " );
+    string betStr = Console.ReadLine();
+    Console.WriteLine();
+
+    if ( !double.TryParse( betStr, out double bet )
+        || bet <= 0
+        || double.IsInfinity( bet )
+        || double.IsNaN( bet )
+        || bet > balance )
+    {
+        return OptionHandleResult.InvalidBetValue;
+    }
+
+    int seed = Random.Shared.Next( 1, 21 );
+
+    if ( seed >= 18 && seed <= 20 )
+    {
+        double winAmount = CalculateWinAmount( bet, seed );
+
+        if ( double.IsInfinity( winAmount )
+            || double.IsNaN( winAmount )
+            || double.MaxValue - ( winAmount - bet ) < balance )
+        {
+            return OptionHandleResult.InvalidBetValue;
+        }
+
+        balance += winAmount - bet;
+        Console.WriteLine( $"You won {winAmount} credits!" );
+    }
+    else
+    {
+        balance -= bet;
+        Console.WriteLine( $"You lost {bet} credits." );
+    }
+    Console.WriteLine( $"Now your balance is {balance}." );
+    Console.WriteLine();
+    return OptionHandleResult.Success;
+}
+
+double CalculateWinAmount( double bet, int seed )
+{
+    const int multiplicator = 2;
+    return bet * ( 1 + ( multiplicator * seed % 17 ) );
+}
+
+OptionHandleResult Exit()
+{
+    isGameFinished = true;
+    Console.WriteLine( "See you later!" );
+    return OptionHandleResult.Success;
+}
+
+enum OptionHandleResult
+{
+    Success = 0,
+    InvalidOption = 1,
+
+    InvalidDepositValue = 2,
+    InvalidBetValue = 3,
+}
